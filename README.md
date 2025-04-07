@@ -1,4 +1,4 @@
-![Screenshot (13)](https://github.com/user-attachments/assets/9e1b8e8a-97f3-4742-b3b7-1514d162a352)# 📝 ToDo List Application
+# 📝 ToDo List Application
 
 A clean, modern, and responsive ToDo List application built with **Node.js** and **Express.js**, styled to resemble Google Tasks.  
 This project is containerized using Docker and features a complete CI/CD pipeline using **GitHub Actions**.
@@ -43,7 +43,7 @@ This project is containerized using Docker and features a complete CI/CD pipelin
 ### 💻 Running Locally
 
 ```bash
-git clone 
+git clone https://github.com/Vikashchaurasiya07/nodejs-demo-app.git
 cd your-repo
 npm install
 npm start
