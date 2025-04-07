@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Google-Style ToDo App ✨</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f1f3f4;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+    h1 {
+      text-align: center;
+      color: #202124;
+      margin-bottom: 1.5rem;
+    }
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      outline: none;
+    }
+    button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #155ab6;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li {
+      background: #f8f9fa;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    li .task {
+      color: #202124;
+      font-size: 1rem;
+    }
+    li button {
+      background: none;
+      color: #d93025;
+      font-size: 1rem;
+      padding: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 My Tasks</h1>
+    <div class="input-group">
+      <input type="text" id="taskInput" placeholder="What do you need to do?" />
+      <button onclick="addTodo()">Add</button>
+    </div>
+    <ul id="todoList"></ul>
+  </div>
+
+  <script>
+    async function fetchTodos() {
+      const res = await fetch('/api/todos');
+      const todos = await res.json();
+      const list = document.getElementById('todoList');
+      list.innerHTML = '';
+      todos.forEach(todo => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span class="task">${todo.task}</span>
+          <button onclick="deleteTodo(${todo.id})">❌</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    async function addTodo() {
+      const input = document.getElementById('taskInput');
+      const task = input.value.trim();
+      if (!task) return;
+
+      await fetch('/api/todos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task })
+      });
+      input.value = '';
+      fetchTodos();
+    }
+
+    async function deleteTodo(id) {
+      await fetch('/api/todos/' + id, { method: 'DELETE' });
+      fetchTodos();
+    }
+
+    fetchTodos(); // load on page
+  </script>
+</body>
+</html>
