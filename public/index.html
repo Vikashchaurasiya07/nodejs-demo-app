@@ -2,131 +2,138 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Google-Style ToDo App ✨</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modern ToDo App</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f1f3f4;
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
       margin: 0;
       padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .container {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 500px;
+      color: #333;
     }
     h1 {
       text-align: center;
-      color: #202124;
-      margin-bottom: 1.5rem;
+      color: #4a90e2;
+    }
+    .todo-app {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
     }
     .input-group {
       display: flex;
       gap: 0.5rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
     }
     input[type="text"] {
       flex: 1;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      border: 1px solid #dadce0;
-      border-radius: 8px;
-      outline: none;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    select {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
     }
     button {
-      background-color: #1a73e8;
+      background: #4a90e2;
       color: white;
       border: none;
-      padding: 0.75rem 1.2rem;
-      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
       cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background-color: #155ab6;
     }
     ul {
       list-style: none;
       padding: 0;
-      margin: 0;
     }
     li {
-      background: #f8f9fa;
-      padding: 0.75rem 1rem;
-      margin-bottom: 0.75rem;
-      border-radius: 10px;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      border-radius: 5px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
-    li .task {
-      color: #202124;
-      font-size: 1rem;
-    }
-    li button {
-      background: none;
-      color: #d93025;
-      font-size: 1rem;
-      padding: 0.3rem;
+    .high { background: #ffdddd; }
+    .medium { background: #fff3cd; }
+    .low { background: #d4edda; }
+    .stats {
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📝 My Tasks</h1>
+  <h1>ToDo List</h1>
+  <div class="todo-app">
     <div class="input-group">
-      <input type="text" id="taskInput" placeholder="What do you need to do?" />
-      <button onclick="addTodo()">Add</button>
+      <input type="text" id="taskInput" placeholder="Enter your task...">
+      <select id="priority">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+      <button onclick="addTask()">Add</button>
     </div>
-    <ul id="todoList"></ul>
+    <ul id="taskList"></ul>
+    <div class="stats" id="taskStats"></div>
   </div>
 
   <script>
-    async function fetchTodos() {
-      const res = await fetch('/api/todos');
-      const todos = await res.json();
-      const list = document.getElementById('todoList');
-      list.innerHTML = '';
-      todos.forEach(todo => {
-        const li = document.createElement('li');
+    const taskInput = document.getElementById("taskInput");
+    const prioritySelect = document.getElementById("priority");
+    const taskList = document.getElementById("taskList");
+    const taskStats = document.getElementById("taskStats");
+
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+    function renderTasks() {
+      taskList.innerHTML = "";
+      let completed = 0;
+      tasks.forEach((task, index) => {
+        const li = document.createElement("li");
+        li.className = task.priority;
         li.innerHTML = `
-          <span class="task">${todo.task}</span>
-          <button onclick="deleteTodo(${todo.id})">❌</button>
-        `;
-        list.appendChild(li);
+          <span>${task.text}</span>
+          <div>
+            <button onclick="toggleComplete(${index})">${task.completed ? '✔️' : '⬜'}</button>
+            <button onclick="deleteTask(${index})">🗑️</button>
+          </div>`;
+        if (task.completed) li.style.textDecoration = "line-through";
+        if (task.completed) completed++;
+        taskList.appendChild(li);
       });
+      taskStats.innerText = `Total: ${tasks.length} | Completed: ${completed} | Remaining: ${tasks.length - completed}`;
+      localStorage.setItem("tasks", JSON.stringify(tasks));
     }
 
-    async function addTodo() {
-      const input = document.getElementById('taskInput');
-      const task = input.value.trim();
-      if (!task) return;
-
-      await fetch('/api/todos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task })
-      });
-      input.value = '';
-      fetchTodos();
+    function addTask() {
+      const text = taskInput.value.trim();
+      const priority = prioritySelect.value;
+      if (text === "") return;
+      tasks.push({ text, priority, completed: false });
+      taskInput.value = "";
+      renderTasks();
     }
 
-    async function deleteTodo(id) {
-      await fetch('/api/todos/' + id, { method: 'DELETE' });
-      fetchTodos();
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      renderTasks();
     }
 
-    fetchTodos(); // load on page
+    function toggleComplete(index) {
+      tasks[index].completed = !tasks[index].completed;
+      renderTasks();
+    }
+
+    renderTasks();
   </script>
 </body>
 </html>
