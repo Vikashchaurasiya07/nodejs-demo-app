@@ -1,25 +1,30 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'node:18'
+      args '-v /var/run/docker.sock:/var/run/docker.sock'
+    }
+  }
 
   stages {
-    stage('Checkout Code') {
+    stage('Clone Repo') {
       steps {
-        echo '📥 Cloning repository...'
         checkout scm
+        echo '✅ Cloned repo'
       }
     }
 
     stage('Install Dependencies') {
       steps {
-        echo '📦 Installing Node modules...'
+        echo '📦 Installing dependencies...'
         sh 'npm install'
       }
     }
 
-    stage('Run Tests') {
+    stage('Run Unit Tests') {
       steps {
         echo '🧪 Running tests...'
-        sh 'npm test || echo "No tests available 💅"'
+        sh 'npm test || echo "No tests yet 💅"'
       }
     }
 
@@ -32,15 +37,15 @@ pipeline {
 
     stage('Deploy (Optional)') {
       steps {
-        echo '🚀 Deployment stage (optional for now)...'
-        // You can push to DockerHub or deploy to Render here
+        echo '🚀 Deployment placeholder...'
+        // Optional deploy code here
       }
     }
   }
 
   post {
     success {
-      echo '✅ CI/CD pipeline completed successfully!'
+      echo '✅ CI/CD pipeline completed!'
     }
     failure {
       echo '❌ CI/CD pipeline failed!'
